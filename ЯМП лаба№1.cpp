@@ -10,10 +10,11 @@
 using namespace std;
 
 int main() {
-   
+
     ifstream fin("task.txt");
     ofstream fout("result_lex.txt");
     ofstream fout2("result_sin.txt");
+    ofstream fout3("result_sem.txt");
     Lexer lex;
     vector<token> v;
     token m("sdd", "dsd");
@@ -24,7 +25,7 @@ int main() {
         code.push_back({ s, lex.line });
     }
     else {
-        code.push_back({ s, lex.line -1});
+        code.push_back({ s, lex.line - 1 });
     }
     hash_table hash;
     int flag = 1;//проверка на ошибки на уровне лексики
@@ -37,7 +38,7 @@ int main() {
         else if (lex.getState(s) == 10 || lex.getState(s) == 9) {
             hash.insert(token(s, "int_num"));
             lextype.push_back("int_num");
-            
+
         }
         else if (lex.getState(s) == 6 || lex.getState(s) == 7) {
             hash.insert(token(s, "operator"));
@@ -76,33 +77,40 @@ int main() {
     if (flag) {
         Parser par(code, lextype);
         try {
-            
+
             par.parse();
+            fout3 << par.get_res();
         }
+
         catch (exception e) {
             if (string(e.what()) == "Expected ; ") {
-                cout << '\n';
-                cout << e.what() << " line: " << par.code[par.i].second - 1;
+                fout3 << '\n';
+                fout3 << e.what() << " line: " << par.code[par.i].second - 1;
             }
             else {
                 if (par.i < code.size()) {
-                    cout << '\n';
-                    cout << e.what() << " line: " << par.code[par.i].second;
+                    fout3 << '\n';
+                    fout3 << e.what() << " line: " << par.code[par.i].second;
                 }
                 else {
                     if (par.code[par.i - 1].first == ";") {
-                        cout << '\n';
-                        cout << "Error in line: " << par.code[par.i - 1].second + 1;
+                        fout3 << '\n';
+                        fout3 << "Error in line: " << par.code[par.i - 1].second + 1;
                     }
                     else {
-                        cout << '\n';
-                        cout << "Error in line: " << par.code[par.i - 1].second;
+                        if (e.what()[0] == 'W') {
+                            fout3 << '\n';
+                            fout3 << "Error in line: " << par.code[par.i - 1].second;
+                        }
+                        else {
+                            fout3 << e.what();
+                        }
                     }
                 }
 
             }
         }
-        
+
     }
     return 0;
 }
